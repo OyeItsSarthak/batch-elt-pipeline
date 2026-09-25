@@ -73,7 +73,7 @@ Batch ELT Pipeline/
 ## 🚦 Roadmap & Implementation Levels
 
 - [x] **Level 0: Setup & Environment** — Git, repository structure, virtual environment, and security exclusions.
-- [ ] **Level 1: Data Extraction** — Automated ingestion of NYC TLC monthly Parquet datasets into the landing zone.
+- [x] **Level 1: Data Extraction** — Automated ingestion of NYC TLC monthly Parquet datasets into the landing zone.
 - [ ] **Level 2: Distributed Cleansing** — PySpark job for filtering anomalous records, deduplication, and schema validation.
 - [ ] **Level 3: Warehouse Loading** — Secure Snowflake bulk-loading using staging and `COPY INTO`.
 - [ ] **Level 4: Dimensional Modeling** — dbt project with Star Schema (`fct_trips`, `dim_zones`) and data contract tests.
