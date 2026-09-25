@@ -1,0 +1,11 @@
+# Ingestion & Networking
+requests>=2.31.0
+python-dotenv>=1.0.1
+
+# Tabular & Parquet Verification
+pyarrow>=15.0.0
+pandas>=2.2.0
+
+# Testing & Quality
+pytest>=8.0.0
+ruff>=0.3.0

@@ -1,0 +1,64 @@
+# Python & Environment
+.venv/
+env/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Data Directories (Raw files, extracts, parquet)
+data/
+raw/
+*.parquet
+*.csv
+*.tsv
+*.gz
+*.tar
+*.zip
+
+# Secrets & Environment Variables (CRITICAL: Never commit credentials)
+.env
+.env.*
+!.env.example
+secrets/
+profiles.yml
+credentials.json
+*.pem
+*.key
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Airflow
+airflow.cfg
+airflow.db
+standalone_admin_password.txt
+unittests.cfg
+
+# IDEs & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
