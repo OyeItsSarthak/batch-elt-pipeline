@@ -2,6 +2,9 @@
 requests>=2.31.0
 python-dotenv>=1.0.1
 
+# Distributed Processing
+pyspark>=3.5.0
+
 # Tabular & Parquet Verification
 pyarrow>=15.0.0
 pandas>=2.2.0

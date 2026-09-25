@@ -1,3 +1,5 @@
+
+
 # Python & Environment
 .venv/
 env/
@@ -8,6 +10,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
+
+# Windows Hadoop Binaries (winutils)
+hadoop/
 
 # Distribution / packaging
 build/
