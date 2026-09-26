@@ -31,9 +31,12 @@ wheels/
 .installed.cfg
 *.egg
 
-# Data Directories (Raw files, extracts, parquet)
+# Data Directories (Raw files, extracts, parquet, warehouse)
 data/
 raw/
+warehouse/
+*.duckdb
+*.duckdb.wal
 *.parquet
 *.csv
 *.tsv
