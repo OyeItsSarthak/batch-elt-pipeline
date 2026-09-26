@@ -5,8 +5,9 @@ python-dotenv>=1.0.1
 # Distributed Processing
 pyspark>=3.5.0
 
-# Analytical Data Warehouse (OLAP Engine)
+# Analytical Data Warehouse & Transformations
 duckdb>=0.10.0
+dbt-duckdb>=1.8.0
 
 # Tabular & Parquet Verification
 pyarrow>=15.0.0
