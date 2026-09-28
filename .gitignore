@@ -49,7 +49,9 @@ warehouse/
 .env.*
 !.env.example
 secrets/
-profiles.yml
+# Home-directory dbt profiles may contain Snowflake/BigQuery secrets.
+# nyc_taxi_dbt/profiles.yml is DuckDB-only and is committed.
+**/.dbt/profiles.yml
 credentials.json
 *.pem
 *.key

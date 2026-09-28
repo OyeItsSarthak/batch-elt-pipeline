@@ -1,0 +1,17 @@
+version: 2
+
+exposures:
+  - name: nyc_taxi_trip_analytics
+    label: NYC Taxi Trip Analytics
+    type: dashboard
+    maturity: medium
+    description: >
+      Star-schema marts for trip volume, revenue, and zone-level demand.
+      Built for analysts querying fct_trips joined to dim_zones and dim_date.
+    depends_on:
+      - ref('fct_trips')
+      - ref('dim_zones')
+      - ref('dim_date')
+    owner:
+      name: Sarthak
+      email: sarthak@example.com

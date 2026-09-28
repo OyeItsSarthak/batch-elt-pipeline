@@ -1,73 +1,56 @@
+{{
+    config(
+        materialized='table',
+        description='Mart: Fact table for individual taxi trips — the primary analytical table for all trip-level metrics.'
+    )
+}}
+
 /*
-  Model: fct_trips
-  Layer: Marts (Fact Table)
-  Depends on: int_trips_enriched
-  Materialized: TABLE (pre-computed for analytical query performance)
+  fct_trips — Fact Table (Star Schema Mart)
+  ------------------------------------------
+  Production-certified trip records with all business metrics and foreign keys
+  pointing to dimension tables (dim_zones, dim_date).
 
-  Purpose:
-    - Production-ready fact table exposing one row per completed trip.
-    - Contains all trip metrics, time dimensions, zone keys, and financial KPIs.
-    - Designed for direct querying by BI tools (e.g., Streamlit, Metabase, Tableau).
-
-  Star Schema Role: Central FACT TABLE in the Star Schema.
+  Grain: One row per individual taxi trip.
+  Primary Key: trip_id
 */
 
-WITH enriched AS (
-    SELECT * FROM {{ ref('int_trips_enriched') }}
-)
-
 SELECT
-    -- === Primary Key ===
+    -- Primary key
     trip_id,
 
-    -- === Foreign Keys (links to dimension tables) ===
+    -- Foreign keys → dimension tables
     pickup_location_id,
     dropoff_location_id,
+    pickup_date,
 
-    -- === Degenerate Dimensions (no separate dimension table needed) ===
+    -- Degenerate dimensions (captured at transaction time, no dim table needed)
     vendor_id,
-    rate_code_id,
-    payment_type,
-    payment_method,
-    store_and_fwd_flag,
-
-    -- === Date / Time Dimensions ===
-    pickup_at,
-    dropoff_at,
-    DATE(pickup_at)                                     AS pickup_date,
-    YEAR(pickup_at)                                     AS pickup_year,
-    MONTH(pickup_at)                                    AS pickup_month,
-    DAYOFMONTH(pickup_at)                               AS pickup_day,
-    HOUR(pickup_at)                                     AS pickup_hour,
-    day_of_week,
-    is_weekend,
     time_of_day_segment,
+    payment_method,
+    is_weekend,
+    passenger_count,
 
-    -- === Zone Labels (denormalized for query convenience) ===
+    -- Zone names (denormalized for query performance)
     pickup_borough,
     pickup_zone,
-    pickup_service_zone,
     dropoff_borough,
     dropoff_zone,
-    dropoff_service_zone,
 
-    -- === Trip Metrics ===
-    passenger_count,
-    trip_distance,
-    distance_category,
+    -- Timestamps
+    pickup_at,
+    dropoff_at,
+
+    -- Additive measures
+    trip_distance_miles,
     trip_duration_minutes,
     avg_speed_mph,
-
-    -- === Financial Measures ===
     fare_amount,
-    extra,
-    mta_tax,
     tip_amount,
     tip_percentage,
     tolls_amount,
-    improvement_surcharge,
     congestion_surcharge,
     airport_fee,
     total_amount
 
-FROM enriched
+FROM {{ ref('int_trips_enriched') }}

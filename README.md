@@ -59,7 +59,7 @@ Batch ELT Pipeline/
 │   ├── raw/              # Raw ingested parquet files
 │   ├── processed/        # PySpark cleaned parquet files
 │   └── warehouse/        # DuckDB columnar analytical database
-├── dbt_project/          # dbt models, tests, and documentation
+├── nyc_taxi_dbt/         # dbt models, tests, and documentation
 ├── src/                  # Pipeline source scripts
 │   ├── extract/          # Extraction modules
 │   ├── transform/        # PySpark transformation jobs
@@ -77,7 +77,22 @@ Batch ELT Pipeline/
 - [x] **Level 1: Data Extraction** — Automated ingestion of NYC TLC monthly Parquet datasets into the landing zone.
 - [x] **Level 2: Distributed Cleansing** — PySpark job for filtering anomalous records, deduplication, and schema validation.
 - [x] **Level 3: Warehouse Loading** — High-performance DuckDB columnar ingestion and raw schema initialization.
-- [ ] **Level 4: Dimensional Modeling** — dbt project with Star Schema (`fct_trips`, `dim_zones`) and data contract tests.
+- [x] **Level 4: Dimensional Modeling** — dbt project with star schema (`fct_trips`, `dim_zones`, `dim_date`) and data tests.
 - [ ] **Level 5: Orchestration** — Apache Airflow DAG for scheduled, fault-tolerant execution.
 - [ ] **Level 6: Testing & CI/CD** — GitHub Actions integration running automated validation on every commit.
 - [ ] **Level 7: Production Runbook & Documentation** — System design decisions, trade-offs, and verification steps.
+
+---
+
+## Level 4 — dbt
+
+After the warehouse `raw` schema is loaded:
+
+```bash
+cd nyc_taxi_dbt
+dbt deps --profiles-dir .
+dbt run --profiles-dir .
+dbt test --profiles-dir .
+```
+
+Models: `staging` → `intermediate` → `marts`. Analysts query `marts.fct_trips` joined to `marts.dim_zones` and `marts.dim_date`. Full notes are in `nyc_taxi_dbt/README.md`.

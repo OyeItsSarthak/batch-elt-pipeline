@@ -1,69 +1,63 @@
 version: 2
 
-sources:
-  - name: raw
-    description: "Raw ingestion schema — loaded by the PySpark cleansing job and DuckDB bulk loader."
-    schema: raw
-    tables:
-      - name: trips
-        description: "Cleaned and feature-engineered NYC TLC Yellow Taxi trip records for January 2024."
-        columns:
-          - name: VendorID
-            description: "Taxi vendor identifier (1=Creative Mobile, 2=VeriFone)."
-          - name: tpep_pickup_datetime
-            description: "Timestamp when the meter was engaged."
-          - name: fare_amount
-            description: "Metered trip fare before surcharges."
-          - name: total_amount
-            description: "Total amount charged to the passenger."
-
-      - name: zones
-        description: "NYC TLC Taxi Zone lookup reference table (265 zones)."
-        columns:
-          - name: location_id
-            description: "Unique zone identifier matching PULocationID/DOLocationID in trips."
-          - name: borough
-            description: "NYC Borough (Manhattan, Queens, Brooklyn, etc.)."
-          - name: zone
-            description: "Descriptive zone name (e.g., Times Sq/Theatre District)."
-
 models:
   - name: stg_trips
     description: >
-      Staged trip records from raw.trips. Standardizes column names to snake_case,
-      enforces data types, adds an MD5 surrogate trip_id, and applies safety filters.
+      Standardized staging model for NYC TLC yellow taxi trip records.
+      Renamed from raw PySpark column names to snake_case analytical standard.
+      Surrogate trip_id generated via MD5 hash of natural keys.
     columns:
       - name: trip_id
-        description: "MD5 surrogate key — unique hash of vendor, timestamps, locations, and fare."
+        description: MD5 surrogate key uniquely identifying each trip.
         tests:
           - unique
           - not_null
-
+      - name: vendor_id
+        description: Taxi vendor identifier (1 = Creative Mobile, 2 = VeriFone).
+        tests:
+          - not_null
+      - name: pickup_at
+        description: Timestamp when the meter was engaged.
+        tests:
+          - not_null
+      - name: dropoff_at
+        description: Timestamp when the meter was disengaged.
+        tests:
+          - not_null
       - name: pickup_location_id
-        description: "Foreign key referencing stg_zones.location_id."
+        description: TLC taxi zone location ID for the pickup.
         tests:
           - not_null
-
       - name: dropoff_location_id
-        description: "Foreign key referencing stg_zones.location_id."
+        description: TLC taxi zone location ID for the dropoff.
         tests:
           - not_null
-
+      - name: trip_distance_miles
+        description: Trip distance in miles reported by the taximeter.
+        tests:
+          - not_null
       - name: fare_amount
-        description: "Metered fare — must be positive after cleansing."
+        description: Metered fare before surcharges.
         tests:
           - not_null
-
       - name: total_amount
-        description: "Total charged amount — must be positive after cleansing."
+        description: Total amount charged to the passenger.
         tests:
           - not_null
 
   - name: stg_zones
-    description: "Staged zone reference data from raw.zones."
+    description: Standardized staging model for NYC TLC taxi zone lookup table.
     columns:
       - name: location_id
-        description: "Primary key for the zone dimension."
+        description: Unique zone identifier matching pickup/dropoff location IDs.
         tests:
           - unique
+          - not_null
+      - name: borough
+        description: NYC borough name.
+        tests:
+          - not_null
+      - name: zone_name
+        description: Human-readable taxi zone name.
+        tests:
           - not_null

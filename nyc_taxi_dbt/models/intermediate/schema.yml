@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: int_trips_enriched
+    description: "{{ doc('int_trips_enriched') }}"
+    columns:
+      - name: trip_id
+        tests:
+          - unique
+          - not_null
+      - name: time_of_day_segment
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - Morning Rush
+                  - Midday
+                  - Evening Rush
+                  - Night
+                  - Late Night / Early Morning
+      - name: payment_method
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - Credit Card
+                  - Cash
+                  - No Charge
+                  - Dispute
+                  - Unknown
+                  - Voided Trip
+                  - Other
+      - name: is_weekend
+        tests:
+          - not_null
+      - name: pickup_borough
+        description: Borough of the pickup zone (null only if the zone lookup is missing a key).
+      - name: dropoff_borough
+        description: Borough of the dropoff zone.

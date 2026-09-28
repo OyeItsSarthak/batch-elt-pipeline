@@ -1,0 +1,14 @@
+# DuckDB has no warehouse credentials. Path can be overridden with DUCKDB_DATABASE_PATH.
+# Run from this directory: dbt run --profiles-dir .
+# Copy to ~/.dbt/profiles.yml if you prefer the default profiles directory.
+
+nyc_taxi_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_DATABASE_PATH', '../data/warehouse/nyc_taxi.duckdb') }}"
+      threads: 4
+      schema: main
+      extensions:
+        - parquet

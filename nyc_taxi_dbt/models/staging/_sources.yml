@@ -1,0 +1,48 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Landing schema in the warehouse. PySpark writes cleaned parquet; the bulk loader
+      creates raw.trips and raw.zones. Staging models read only from these sources.
+    schema: raw
+    tables:
+      - name: trips
+        description: >
+          Feature-engineered NYC TLC yellow taxi trips after Spark cleansing
+          (deduplicated, invalid fares/distances removed, duration and speed added).
+        columns:
+          - name: VendorID
+            description: Taxi vendor identifier (1 = Creative Mobile, 2 = VeriFone).
+          - name: tpep_pickup_datetime
+            description: Timestamp when the meter was engaged.
+          - name: tpep_dropoff_datetime
+            description: Timestamp when the meter was disengaged.
+          - name: PULocationID
+            description: TLC taxi zone of pickup.
+          - name: DOLocationID
+            description: TLC taxi zone of dropoff.
+          - name: trip_distance
+            description: Trip distance in miles.
+          - name: fare_amount
+            description: Metered fare before most surcharges.
+          - name: total_amount
+            description: Total amount charged to the passenger.
+          - name: trip_duration_minutes
+            description: Spark-calculated duration (dropoff minus pickup).
+          - name: avg_speed_mph
+            description: Spark-calculated average speed.
+          - name: tip_percentage
+            description: Spark-calculated tip as a percent of fare.
+
+      - name: zones
+        description: NYC TLC taxi zone lookup (borough, zone name, service zone).
+        columns:
+          - name: location_id
+            description: Zone identifier matching PULocationID / DOLocationID.
+          - name: borough
+            description: Borough or special area (e.g. EWR).
+          - name: zone
+            description: Human-readable zone name.
+          - name: service_zone
+            description: TLC service zone classification.

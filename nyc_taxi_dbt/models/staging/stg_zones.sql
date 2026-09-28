@@ -1,25 +1,23 @@
-/*
-  Model: stg_zones
-  Layer: Staging
-  Source: raw.zones (loaded by DuckDB bulk loader)
+{{
+    config(
+        materialized='view',
+        description='Staging layer: clean and rename columns from the raw taxi zone reference table.'
+    )
+}}
 
-  Purpose:
-    - Standardizes raw zone column names to snake_case.
-    - Represents the NYC TLC Taxi Zone dimension reference table.
+/*
+  stg_zones — Staging Layer
+  -------------------------
+  Reads from raw.zones (loaded by the DuckDB bulk loader from taxi_zone_lookup.csv).
+  Responsibilities:
+    1. Rename columns to snake_case analytical standard.
+    2. Enforce strict type casting.
 */
 
-WITH source AS (
-    SELECT * FROM raw.zones
-),
+SELECT
+    CAST(location_id AS INTEGER)     AS location_id,
+    CAST(borough AS VARCHAR)         AS borough,
+    CAST(zone AS VARCHAR)            AS zone_name,
+    CAST(service_zone AS VARCHAR)    AS service_zone
 
-renamed AS (
-    SELECT
-        location_id,
-        borough,
-        zone,
-        service_zone
-    FROM source
-    WHERE location_id IS NOT NULL
-)
-
-SELECT * FROM renamed
+FROM {{ source('raw', 'zones') }}

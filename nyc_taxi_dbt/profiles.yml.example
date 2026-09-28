@@ -1,0 +1,13 @@
+# Copy to ~/.dbt/profiles.yml OR run dbt with --profiles-dir .
+# Override the warehouse file with DUCKDB_DATABASE_PATH if needed.
+
+nyc_taxi_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_DATABASE_PATH', '../data/warehouse/nyc_taxi.duckdb') }}"
+      threads: 4
+      schema: main
+      extensions:
+        - parquet

@@ -1,84 +1,79 @@
-/*
-  Model: int_trips_enriched
-  Layer: Intermediate
-  Depends on: stg_trips, stg_zones
+{{
+    config(
+        materialized='table',
+        description='Intermediate layer: enrich standardized trips with zone names, time segments, and payment labels.'
+    )
+}}
 
-  Purpose:
-    - Denormalizes zone names onto trip records (pickup + dropoff zones).
-    - Derives business-friendly categorical columns for analytics.
-    - Calculates time-of-day and day-of-week segments for trend analysis.
-    - This enriched view feeds directly into the final fact table.
+/*
+  int_trips_enriched — Intermediate Layer
+  ----------------------------------------
+  Joins stg_trips with stg_zones to denormalize pickup/dropoff borough and zone names.
+  Applies business logic macros:
+    - time_of_day_segment: classifies trips by time of day
+    - payment_method: decodes payment_type_code to human-readable label
+    - is_weekend: flags weekend trips
+  This is the analytical source of truth consumed by mart models.
 */
 
 WITH trips AS (
     SELECT * FROM {{ ref('stg_trips') }}
 ),
 
-zones AS (
-    SELECT * FROM {{ ref('stg_zones') }}
+pickup_zones AS (
+    SELECT
+        location_id,
+        borough    AS pickup_borough,
+        zone_name  AS pickup_zone
+    FROM {{ ref('stg_zones') }}
 ),
 
-trips_with_zones AS (
+dropoff_zones AS (
     SELECT
-        t.*,
-
-        -- Pickup zone enrichment
-        pu_zone.borough                                 AS pickup_borough,
-        pu_zone.zone                                    AS pickup_zone,
-        pu_zone.service_zone                            AS pickup_service_zone,
-
-        -- Dropoff zone enrichment
-        do_zone.borough                                 AS dropoff_borough,
-        do_zone.zone                                    AS dropoff_zone,
-        do_zone.service_zone                            AS dropoff_service_zone
-
-    FROM trips t
-    LEFT JOIN zones pu_zone ON t.pickup_location_id = pu_zone.location_id
-    LEFT JOIN zones do_zone ON t.dropoff_location_id = do_zone.location_id
-),
-
-enriched AS (
-    SELECT
-        *,
-
-        -- Time-of-day segment (for peak hour analysis)
-        CASE
-            WHEN HOUR(pickup_at) BETWEEN 7  AND 9  THEN 'Morning Rush'
-            WHEN HOUR(pickup_at) BETWEEN 10 AND 15 THEN 'Midday'
-            WHEN HOUR(pickup_at) BETWEEN 16 AND 19 THEN 'Evening Rush'
-            WHEN HOUR(pickup_at) BETWEEN 20 AND 23 THEN 'Night'
-            ELSE 'Late Night / Early Morning'
-        END                                             AS time_of_day_segment,
-
-        -- Day of week
-        DAYNAME(pickup_at)                              AS day_of_week,
-
-        -- Weekend flag
-        CASE
-            WHEN DAYOFWEEK(pickup_at) IN (1, 7) THEN TRUE
-            ELSE FALSE
-        END                                             AS is_weekend,
-
-        -- Trip distance bucket
-        CASE
-            WHEN trip_distance < 1   THEN 'Short (<1 mile)'
-            WHEN trip_distance < 3   THEN 'Medium (1-3 miles)'
-            WHEN trip_distance < 10  THEN 'Long (3-10 miles)'
-            ELSE 'Extra Long (>10 miles)'
-        END                                             AS distance_category,
-
-        -- Payment type label
-        CASE payment_type
-            WHEN 1 THEN 'Credit Card'
-            WHEN 2 THEN 'Cash'
-            WHEN 3 THEN 'No Charge'
-            WHEN 4 THEN 'Dispute'
-            WHEN 5 THEN 'Unknown'
-            WHEN 6 THEN 'Voided Trip'
-            ELSE 'Other'
-        END                                             AS payment_method
-
-    FROM trips_with_zones
+        location_id,
+        borough    AS dropoff_borough,
+        zone_name  AS dropoff_zone
+    FROM {{ ref('stg_zones') }}
 )
 
-SELECT * FROM enriched
+SELECT
+    -- Keys
+    t.trip_id,
+    t.vendor_id,
+    t.pickup_location_id,
+    t.dropoff_location_id,
+
+    -- Timestamps
+    t.pickup_at,
+    t.dropoff_at,
+    DATE_TRUNC('day', t.pickup_at)::DATE  AS pickup_date,
+
+    -- Zone enrichment (LEFT JOIN: preserve trips even if zone lookup is incomplete)
+    pu.pickup_borough,
+    pu.pickup_zone,
+    do_.dropoff_borough,
+    do_.dropoff_zone,
+
+    -- Business logic via macros
+    {{ time_of_day_segment('t.pickup_at') }}  AS time_of_day_segment,
+    {{ payment_method('t.payment_type_code') }} AS payment_method,
+    {{ is_weekend('t.pickup_at') }}            AS is_weekend,
+
+    -- Trip metrics
+    t.passenger_count,
+    t.trip_distance_miles,
+    t.trip_duration_minutes,
+    t.avg_speed_mph,
+
+    -- Financials
+    t.fare_amount,
+    t.tip_amount,
+    t.tip_percentage,
+    t.tolls_amount,
+    t.congestion_surcharge,
+    t.airport_fee,
+    t.total_amount
+
+FROM trips t
+LEFT JOIN pickup_zones  pu   ON t.pickup_location_id  = pu.location_id
+LEFT JOIN dropoff_zones do_  ON t.dropoff_location_id = do_.location_id

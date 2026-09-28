@@ -3,83 +3,82 @@ version: 2
 models:
   - name: fct_trips
     description: >
-      Production Fact Table (Star Schema). One row per completed NYC Yellow Taxi trip.
-      Contains all trip metrics, time dimensions, financial measures, and denormalized
-      zone labels. Materialized as a physical TABLE for sub-second analytical query performance.
+      Fact table for NYC TLC yellow taxi trip records.
+      Grain: one row per trip. Contains all additive measures and foreign keys
+      to dim_zones and dim_date. Source of truth for all analytical dashboards.
     columns:
       - name: trip_id
-        description: "MD5 surrogate primary key — unique identifier per trip."
+        description: MD5 surrogate key uniquely identifying each trip.
         tests:
           - unique
           - not_null
-
-      - name: pickup_at
-        description: "Timestamp when the meter was engaged."
-        tests:
-          - not_null
-
       - name: pickup_location_id
-        description: "Foreign key to dim_zones.location_id for pickup zone."
+        description: Foreign key → dim_zones.location_id (pickup zone).
         tests:
           - not_null
           - relationships:
               to: ref('dim_zones')
               field: location_id
-
       - name: dropoff_location_id
-        description: "Foreign key to dim_zones.location_id for dropoff zone."
+        description: Foreign key → dim_zones.location_id (dropoff zone).
         tests:
           - not_null
-
+      - name: pickup_at
+        description: Pickup timestamp.
+        tests:
+          - not_null
+      - name: dropoff_at
+        description: Dropoff timestamp.
+        tests:
+          - not_null
       - name: fare_amount
-        description: "Metered fare (must be positive)."
+        description: Metered fare amount in USD.
         tests:
           - not_null
-
       - name: total_amount
-        description: "Total amount charged (must be positive)."
+        description: Total charge to the passenger in USD.
         tests:
           - not_null
-
-      - name: trip_distance
-        description: "Trip distance in miles."
+      - name: trip_distance_miles
+        description: Trip distance in miles.
         tests:
           - not_null
-
-      - name: trip_duration_minutes
-        description: "Calculated duration in minutes (dropoff - pickup)."
-        tests:
-          - not_null
-
       - name: payment_method
-        description: "Human-readable payment type label."
+        description: Human-readable payment method label.
         tests:
+          - not_null
           - accepted_values:
-              values: ['Credit Card', 'Cash', 'No Charge', 'Dispute', 'Unknown', 'Voided Trip', 'Other']
-
+              arguments:
+                values:
+                  - Credit Card
+                  - Cash
+                  - No Charge
+                  - Dispute
+                  - Unknown
+                  - Voided Trip
+                  - Other
       - name: time_of_day_segment
-        description: "Categorical time-of-day bucket for pickup hour."
+        description: Categorical time-of-day label for the pickup hour.
         tests:
-          - accepted_values:
-              values: ['Morning Rush', 'Midday', 'Evening Rush', 'Night', 'Late Night / Early Morning']
+          - not_null
 
   - name: dim_zones
     description: >
-      Production Dimension Table (Star Schema). Contains all 265 NYC TLC Taxi Zone records
-      with borough, zone name, and service zone. Joins to fct_trips on location_id.
+      Dimension table for all 265 NYC TLC taxi zones.
+      Maps TLC location IDs to borough, zone name, and service zone classification.
     columns:
       - name: location_id
-        description: "Primary key — unique zone identifier."
+        description: Primary key — unique TLC taxi zone identifier.
         tests:
           - unique
           - not_null
-
       - name: borough
-        description: "NYC Borough name."
+        description: NYC borough (Manhattan, Brooklyn, Queens, Bronx, Staten Island, EWR).
         tests:
           - not_null
-
-      - name: zone
-        description: "Descriptive zone name within the borough."
+      - name: zone_name
+        description: Human-readable zone name within the borough.
         tests:
           - not_null
+      - name: service_zone
+        description: TLC service zone classification (Yellow Zone, Boro Zone, etc.).
