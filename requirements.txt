@@ -8,6 +8,10 @@ pyspark>=3.5.0
 # Analytical Data Warehouse (OLAP Engine)
 duckdb>=0.10.0
 
+# Transformations & Dimensional Modeling
+dbt-core>=1.8.0
+dbt-duckdb>=1.8.0
+
 # Tabular & Parquet Verification
 pyarrow>=15.0.0
 pandas>=2.2.0
@@ -15,3 +19,4 @@ pandas>=2.2.0
 # Testing & Quality
 pytest>=8.0.0
 ruff>=0.3.0
+

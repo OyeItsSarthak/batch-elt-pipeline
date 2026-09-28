@@ -2,9 +2,8 @@
 Unit & Integration Tests for Warehouse Loading Module (Level 3 - DuckDB)
 """
 
-import pytest
 import duckdb
-from pathlib import Path
+
 from src.load.load_to_duckdb import get_db_connection, load_raw_tables
 
 
@@ -30,7 +29,7 @@ def test_warehouse_schema_and_loading(tmp_path):
         sample_parquet = tmp_path / "sample_trips.parquet"
         con.execute(f"""
             COPY (
-                SELECT 
+                SELECT
                     1 AS VendorID,
                     '2024-01-01 10:00:00'::TIMESTAMP AS tpep_pickup_datetime,
                     '2024-01-01 10:15:00'::TIMESTAMP AS tpep_dropoff_datetime,

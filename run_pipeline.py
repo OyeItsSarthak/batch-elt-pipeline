@@ -12,13 +12,13 @@ This script mirrors the exact Airflow task sequence:
   Task 1: Extract  →  Task 2: Spark Cleanse  →  Task 3: DuckDB Load  →  Task 4: dbt Run  →  Task 5: dbt Test
 """
 
-import os
-import sys
-import logging
 import argparse
+import logging
+import os
 import subprocess
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 logging.basicConfig(
     level=logging.INFO,
@@ -83,7 +83,10 @@ def main():
     # ----------------------------------------------------------------
     if not args.skip_extract:
         def step_extract():
-            from src.extract.extract_taxi_data import extract_monthly_trips, extract_zone_lookup
+            from src.extract.extract_taxi_data import (
+                extract_monthly_trips,
+                extract_zone_lookup,
+            )
             extract_monthly_trips(year=year, month=month, taxi_type="yellow", output_dir=str(raw_dir))
             extract_zone_lookup(output_dir=str(raw_dir))
 

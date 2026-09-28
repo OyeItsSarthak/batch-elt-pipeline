@@ -19,9 +19,9 @@ Key Design Decisions:
 
 from __future__ import annotations
 
+import logging
 import os
 import sys
-import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -30,8 +30,8 @@ from pathlib import Path
 # The rest of this file is pure Python / our own src/ modules.
 # ---------------------------------------------------------------------------
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
 
 # ---------------------------------------------------------------------------
 # Project paths — resolve project root relative to this DAG file

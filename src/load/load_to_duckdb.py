@@ -10,12 +10,13 @@ Key Data Engineering Concepts:
 3. Zero-Copy Ingestion: Leveraging direct Parquet and CSV readers without memory thrashing.
 """
 
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
+
 import duckdb
 
 logging.basicConfig(
@@ -42,7 +43,7 @@ def load_raw_tables(
     con: duckdb.DuckDBPyConnection,
     clean_parquet_path: str,
     zone_csv_path: str = "data/raw/taxi_zone_lookup.csv",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Loads raw trip data and taxi zones into the 'raw' warehouse schema.
 
@@ -79,7 +80,7 @@ def load_raw_tables(
         logger.info(f"Loading reference zone lookup from: {zone_csv_path}")
         con.execute(f"""
             CREATE OR REPLACE TABLE raw.zones AS
-            SELECT 
+            SELECT
                 LocationID::INTEGER AS location_id,
                 Borough AS borough,
                 Zone AS zone,
@@ -91,7 +92,7 @@ def load_raw_tables(
 
     # 4. Warehouse Validation Metrics
     kpi_row = con.execute("""
-        SELECT 
+        SELECT
             COUNT(*) AS total_trips,
             ROUND(SUM(total_amount), 2) AS total_revenue,
             ROUND(AVG(trip_distance), 2) AS avg_distance_miles,

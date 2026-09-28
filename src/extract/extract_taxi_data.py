@@ -10,12 +10,12 @@ Key Engineering Concepts:
 3. Idempotent Execution: Skipping downloads if valid file already exists.
 """
 
+import argparse
+import logging
 import os
 import sys
-import logging
-import argparse
 from pathlib import Path
-from typing import Optional
+
 import requests
 
 logging.basicConfig(

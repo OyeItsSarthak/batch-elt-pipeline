@@ -15,20 +15,16 @@ Key Data Quality & Transformation Logic:
    - tip_percentage
 """
 
-import sys
-import os
-import logging
 import argparse
+import logging
+import os
+import sys
 from pathlib import Path
+
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
-    StructType,
-    StructField,
     IntegerType,
-    DoubleType,
-    StringType,
-    TimestampType,
 )
 
 logging.basicConfig(

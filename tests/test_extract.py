@@ -2,10 +2,11 @@
 Unit Tests for Data Extraction Module (Level 1)
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
-from src.extract.extract_taxi_data import download_file, extract_monthly_trips
+
+from src.extract.extract_taxi_data import download_file
 
 
 def test_download_file_idempotency(tmp_path):
