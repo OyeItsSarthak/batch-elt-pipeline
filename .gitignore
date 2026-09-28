@@ -72,3 +72,9 @@ unittests.cfg
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local documents & generated reports
+*CHEATSHEET*
+*cheatsheet*
+*.pdf
+
