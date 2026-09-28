@@ -78,7 +78,7 @@ Batch ELT Pipeline/
 - [x] **Level 2: Distributed Cleansing** — PySpark job for filtering anomalous records, deduplication, and schema validation.
 - [x] **Level 3: Warehouse Loading** — High-performance DuckDB columnar ingestion and raw schema initialization.
 - [x] **Level 4: Dimensional Modeling** — dbt project with star schema (`fct_trips`, `dim_zones`, `dim_date`) and data tests.
-- [ ] **Level 5: Orchestration** — Apache Airflow DAG for scheduled, fault-tolerant execution.
+- [x] **Level 5: Orchestration** — Airflow DAG orchestrating the full monthly pipeline with PythonOperators, BashOperators, retries, and XCom config passing.
 - [ ] **Level 6: Testing & CI/CD** — GitHub Actions integration running automated validation on every commit.
 - [ ] **Level 7: Production Runbook & Documentation** — System design decisions, trade-offs, and verification steps.
 
