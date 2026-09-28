@@ -10,11 +10,30 @@
   -------------------------
   Reads from raw.trips (loaded by the DuckDB bulk loader).
   Responsibilities:
-    1. Rename columns to snake_case analytical standard.
-    2. Enforce strict data type casting.
-    3. Generate a surrogate trip_id using a hash of natural keys.
-    4. No business logic — that lives in the intermediate layer.
+    1. Deduplicate exact duplicate rows from the TLC source (ROW_NUMBER).
+    2. Rename columns to snake_case analytical standard.
+    3. Enforce strict data type casting.
+    4. Generate a surrogate trip_id using a hash of natural keys.
+    5. No business logic — that lives in the intermediate layer.
 */
+
+-- Step 1: Deduplicate identical source rows (TLC raw data contains ~30 exact duplicates).
+-- ROW_NUMBER() over all columns ensures we keep exactly one copy of each record.
+WITH deduplicated AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY
+                VendorID,
+                tpep_pickup_datetime,
+                PULocationID,
+                DOLocationID,
+                total_amount,
+                passenger_count
+            ORDER BY (SELECT NULL)   -- No meaningful tiebreaker; just pick one
+        ) AS _row_num
+    FROM {{ source('raw', 'trips') }}
+)
 
 SELECT
     -- Surrogate key: hash of vendor + pickup time + locations + amount + passengers
@@ -57,4 +76,5 @@ SELECT
     CAST(total_amount AS DOUBLE)               AS total_amount,
     CAST(tip_percentage AS DOUBLE)             AS tip_percentage
 
-FROM {{ source('raw', 'trips') }}
+FROM deduplicated
+WHERE _row_num = 1
