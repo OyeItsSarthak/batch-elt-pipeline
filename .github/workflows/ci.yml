@@ -46,7 +46,9 @@ jobs:
       - name: Build dbt Models (Staging, Intermediate, Marts)
         working-directory: nyc_taxi_dbt
         run: |
+          dbt deps --profiles-dir .
           dbt run --profiles-dir .
+
 
       - name: Run dbt Data Quality & Contract Tests
         working-directory: nyc_taxi_dbt
